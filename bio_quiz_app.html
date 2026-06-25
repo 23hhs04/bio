@@ -1,0 +1,301 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#app{padding:1rem 0;max-width:680px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px}
+.title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:6px 12px;font-size:13px;color:var(--color-text-secondary)}
+.stat span{font-weight:500;color:var(--color-text-primary)}
+.filter-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.filter-btn.active{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500}
+.progress-bar{height:4px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:#185FA5;border-radius:2px;transition:width .3s}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.q-num{font-size:13px;color:var(--color-text-secondary)}
+.q-tag{font-size:11px;padding:3px 8px;border-radius:var(--border-radius-md);font-weight:500}
+.tag-dna{background:#E6F1FB;color:#0C447C}
+.tag-rep{background:#EAF3DE;color:#27500A}
+.tag-rep2{background:#E1F5EE;color:#085041}
+.tag-rna{background:#FAEEDA;color:#633806}
+.tag-prot{background:#EEEDFE;color:#3C3489}
+.tag-operon{background:#FAECE7;color:#712B13}
+.tag-euk{background:#FBEAF0;color:#72243E}
+.q-text{font-size:16px;font-weight:500;color:var(--color-text-primary);line-height:1.6;margin-bottom:1.25rem}
+.options{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;font-size:14px;color:var(--color-text-primary);background:transparent;text-align:left;line-height:1.5;transition:all .15s}
+.opt:hover:not(.disabled){border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.opt.correct{border-color:#0F6E56;background:#E1F5EE;color:#085041}
+.opt.wrong{border-color:#993C1D;background:#FAECE7;color:#712B13}
+.opt.disabled{cursor:default}
+.opt-label{font-weight:500;min-width:18px}
+.feedback{margin-top:1rem;padding:12px 14px;border-radius:var(--border-radius-md);font-size:14px;line-height:1.6;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#E1F5EE;color:#085041;border:0.5px solid #0F6E56}
+.feedback.wrong{background:#FAECE7;color:#712B13;border:0.5px solid #993C1D}
+.actions{display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap}
+.btn{padding:8px 18px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn:hover{background:var(--color-background-secondary)}
+.btn.primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.btn.primary:hover{background:#0C447C}
+.result-card{text-align:center;padding:2rem 1.25rem}
+.result-score{font-size:48px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.result-sub{font-size:16px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.result-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem}
+.rb-item{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 8px;font-size:13px}
+.rb-val{font-size:20px;font-weight:500;margin-bottom:2px}
+.rb-val.green{color:#0F6E56}
+.rb-val.red{color:#993C1D}
+.rb-val.blue{color:#185FA5}
+</style>
+
+<div id="app">
+<div class="header">
+  <div class="title">고급 생명과학 III 퀴즈</div>
+  <div class="stats">
+    <div class="stat">맞은 문제 <span id="correct-count">0</span></div>
+    <div class="stat">틀린 문제 <span id="wrong-count">0</span></div>
+    <div class="stat">남은 문제 <span id="remain-count">0</span></div>
+  </div>
+</div>
+<div class="filter-row" id="filters">
+  <button class="filter-btn active" data-cat="all" onclick="setFilter('all')">전체</button>
+  <button class="filter-btn" data-cat="dna" onclick="setFilter('dna')">DNA 이중나선</button>
+  <button class="filter-btn" data-cat="rep" onclick="setFilter('rep')">DNA 복제</button>
+  <button class="filter-btn" data-cat="rep2" onclick="setFilter('rep2')">DNA 수선</button>
+  <button class="filter-btn" data-cat="rna" onclick="setFilter('rna')">RNA 합성/전사</button>
+  <button class="filter-btn" data-cat="prot" onclick="setFilter('prot')">단백질 합성</button>
+  <button class="filter-btn" data-cat="operon" onclick="setFilter('operon')">오페론</button>
+  <button class="filter-btn" data-cat="euk" onclick="setFilter('euk')">진핵세포 조절</button>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+<div id="quiz-area"></div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+// DNA 이중나선 (dna)
+{cat:'dna',q:'DNA 이중 나선의 지름은 얼마인가?',opts:['1nm','2nm','3.4nm','0.34nm'],ans:1,exp:'이중 나선 지름은 2nm로 일정하다. 퓨린+피리미딘 상보쌍 구조 덕분에 지름이 일정하게 유지된다.'},
+{cat:'dna',q:'DNA 이중 나선에서 인접 염기쌍 간 거리는?',opts:['0.2nm','0.34nm','2nm','3.4nm'],ans:1,exp:'염기 간 거리는 0.34nm이며, 10개의 염기쌍이 1회전(3.4nm)을 이룬다.'},
+{cat:'dna',q:'DNA 이중 나선의 1회전 길이는?',opts:['0.34nm','2nm','3.4nm','34nm'],ans:2,exp:'1회전은 3.4nm이며, 약 10 bp에 해당한다.'},
+{cat:'dna',q:'샤가프의 법칙에 따르면 A와 T의 비율 관계는?',opts:['A > T','A < T','A = T','A + T = 50%'],ans:2,exp:'샤가프의 법칙: A=T, G=C. 따라서 A+G = T+C = 50%.'},
+{cat:'dna',q:'퓨린계 염기에 해당하는 것을 모두 고르면?',opts:['A, T','G, C','A, G','C, T'],ans:2,exp:'퓨린계(고리 2개): A, G / 피리미딘계(고리 1개): C, T'},
+{cat:'dna',q:'A-T 사이의 수소결합 개수는?',opts:['1개','2개','3개','4개'],ans:1,exp:'A-T: 수소결합 2개 / G-C: 수소결합 3개. GC 함량이 높을수록 두 가닥을 분리하기 어렵다.'},
+{cat:'dna',q:'G-C 사이의 수소결합 개수는?',opts:['1개','2개','3개','4개'],ans:2,exp:'G-C 사이에는 수소결합이 3개 형성된다. A-T는 2개.'},
+{cat:'dna',q:'DNA 이중 나선에서 당-인산 골격의 위치는?',opts:['안쪽','바깥쪽','위아래','가운데'],ans:1,exp:'바깥쪽에 당-인산 골격(공유결합), 안쪽에 염기가 수소결합으로 연결된다. X선 회절로 확인됨.'},
+{cat:'dna',q:'역평행(antiparallel) 구조에 대한 설명으로 옳은 것은?',opts:['두 가닥이 같은 방향으로 배열','한 가닥이 5\'→3\'이면 상대 가닥은 3\'→5\'','두 가닥 모두 5\'→3\'방향','역방향은 G-C쌍에만 적용'],ans:1,exp:'역평행 구조: 한 가닥이 5\'→3\' 방향이면 반대 가닥은 3\'→5\' 방향. 새로운 뉴클레오타이드는 3\'-OH에만 추가된다.'},
+{cat:'dna',q:'프랭클린의 X선 회절 사진에서 X자 모양의 회절 무늬가 의미하는 것은?',opts:['직선 구조','나선(helix) 구조','격자 구조','무작위 구조'],ans:1,exp:'X자 모양 회절 무늬는 규칙적인 나선 구조의 결정적 증거다.'},
+{cat:'dna',q:'B형 DNA의 꼬임 방향은?',opts:['왼나사(left-handed)','오른나사(right-handed)','꼬임 없음','A형과 반대방향'],ans:1,exp:'B형은 right-handed helix이며 살아있는 세포에서 가장 일반적인 형태다. Z형만 left-handed.'},
+{cat:'dna',q:'Z형 DNA의 특징으로 옳지 않은 것은?',opts:['왼나사 방향','지그재그 형태','높은 염분 농도에서 생성','A형보다 짧고 굵은 구조'],ans:3,exp:'A형이 B형보다 짧고 굵다. Z형은 left-handed, 지그재그, G-C 염기쌍으로만 구성, 높은 염분 농도에서 생성된다.'},
+{cat:'dna',q:'DNA 이중 나선 1회전에 해당하는 염기쌍 수는?',opts:['5 bp','8 bp','10 bp','12 bp'],ans:2,exp:'1회전 = 3.4nm, 염기 간격 = 0.34nm → 3.4 ÷ 0.34 = 10 bp.'},
+{cat:'dna',q:'새로운 뉴클레오타이드가 결합하는 위치는?',opts:['5\' 말단(-인산기)','3\' 말단(-OH)','어느 쪽이든 가능','중간'],ans:1,exp:'새로운 뉴클레오타이드의 5\'-인산기는 기존 가닥의 노출된 3\'-OH에만 결합한다. 따라서 합성 방향은 5\'→3\'뿐이다.'},
+
+// DNA 복제 (rep)
+{cat:'rep',q:'메셀슨-슈탈 실험에서 지지된 복제 모델은?',opts:['보존적 복제','반보존적 복제','분산적 복제','비선형 복제'],ans:1,exp:'반보존적 복제(semiconservative replication): 원본 가닥 각각이 주형이 되어 새 가닥과 결합한 이중가닥을 만든다.'},
+{cat:'rep',q:'반보존적 복제에서 2세대(G2) 대장균의 DNA 상태는?',opts:['모두 무거운(¹⁵N-¹⁵N)','모두 중간(¹⁴N-¹⁵N)','중간:가벼운 = 1:1','모두 가벼운(¹⁴N-¹⁴N)'],ans:2,exp:'G2: 중간 밀도(¹⁴N-¹⁵N)와 가벼운(¹⁴N-¹⁴N)이 1:1로 존재한다.'},
+{cat:'rep',q:'3세대(G3) 대장균의 DNA 중 가벼운(¹⁴N-¹⁴N) DNA 비율은?',opts:['25%','50%','75%','100%'],ans:2,exp:'G3: 총 8가닥에서 ¹⁵N 포함 가닥 2개 → 중간 DNA 2개(25%), 가벼운 DNA 6개(75%).'},
+{cat:'rep',q:'이중 나선을 푸는 역할을 하는 효소는?',opts:['프라이메이스','토포아이소머레이스','헬리케이스','리가제'],ans:2,exp:'헬리케이스(helicase): 이중 나선의 수소결합을 끊어 두 가닥을 분리한다.'},
+{cat:'rep',q:'DNA 복제에서 RNA 프라이머를 합성하는 효소는?',opts:['DNA 중합효소 I','DNA 중합효소 III','프라이메이스','헬리케이스'],ans:2,exp:'프라이메이스(primase): RNA 프라이머를 합성한다. DNA 중합효소는 3\'-OH가 있어야 합성을 시작할 수 있어 프라이머가 필요하다.'},
+{cat:'rep',q:'주 복제 효소로서 DNA를 신장시키는 효소는?',opts:['DNA 중합효소 I','DNA 중합효소 II','DNA 중합효소 III','RNA 중합효소'],ans:2,exp:'DNA 중합효소 III: 주 복제 효소. 5\'→3\' 합성 + 3\'→5\' exonuclease로 교정 기능 보유.'},
+{cat:'rep',q:'RNA 프라이머를 제거하고 DNA로 채우는 효소는?',opts:['DNA 중합효소 I','DNA 중합효소 II','DNA 중합효소 III','프라이메이스'],ans:0,exp:'DNA 중합효소 I: 5\'→3\' exonuclease로 RNA 프라이머 제거 + DNA로 대체. 수선에도 관여.'},
+{cat:'rep',q:'오카자키 절편 사이의 틈(nick)을 봉합하는 효소는?',opts:['헬리케이스','토포아이소머레이스','프라이메이스','DNA 연결효소(ligase)'],ans:3,exp:'DNA 연결효소(ligase): 오카자키 절편 사이의 닉(nick)을 인산디에스터 결합으로 연결한다.'},
+{cat:'rep',q:'과도한 꼬임(supercoiling)을 해소하는 효소는?',opts:['헬리케이스','토포아이소머레이스','SSBP','리가제'],ans:1,exp:'토포아이소머레이스(topoisomerase): 헬리케이스 앞쪽에서 발생하는 과도한 꼬임을 해소한다.'},
+{cat:'rep',q:'지연가닥(lagging strand)의 특징은?',opts:['연속적으로 합성됨','복제 분기점 방향으로 합성됨','불연속적으로(오카자키 절편) 합성됨','프라이머가 필요 없음'],ans:2,exp:'지연가닥: DNA Pol은 5\'→3\'으로만 합성 가능하므로, 3\'→5\' 주형에서는 복제 분기점 반대 방향으로 불연속 합성된다.'},
+{cat:'rep',q:'DNA 복제의 교정(proofreading) 기능을 수행하는 주요 효소는?',opts:['DNA Pol I (5\'→3\' exonuclease)','DNA Pol III (3\'→5\' exonuclease)','Ligase','헬리케이스'],ans:1,exp:'DNA Pol III의 3\'→5\' exonuclease 기능이 교정을 담당한다. 잘못 삽입된 염기를 3\' 말단에서 제거한 뒤 재합성.'},
+{cat:'rep',q:'원핵생물의 DNA 복제에서 복제 원점(origin)의 수는?',opts:['1개','2개','수백 개','제한 없음'],ans:0,exp:'원핵생물: 복제 원점 1개, 복제 분기점 2개 → 양방향 복제. 진핵세포는 수백 개의 복제 원점 보유.'},
+{cat:'rep',q:'말단 복제 문제(end replication problem)가 발생하는 가닥은?',opts:['선도가닥(leading strand)','지연가닥(lagging strand)','두 가닥 모두','원핵세포에서만'],ans:1,exp:'지연가닥의 5\' 말단에 위치한 마지막 RNA 프라이머 제거 후 공백을 채울 3\'-OH가 없어 말단 복제 문제 발생.'},
+{cat:'rep',q:'사람 텔로미어의 반복 서열은?',opts:['5\'-ATATAT-3\'','5\'-TTAGGG-3\'','5\'-GCGCGC-3\'','5\'-AACCCC-3\''],ans:1,exp:'사람 텔로미어: 5\'-TTAGGG-3\' 서열이 수천 번 반복된다.'},
+{cat:'rep',q:'텔로머레이스(telomerase)의 구성 성분은?',opts:['단백질만','RNA만','단백질 + DNA','단백질 + RNA'],ans:3,exp:'텔로머레이스는 단백질-RNA 복합체. 자체 RNA를 주형으로 DNA를 합성하는 역전사효소 기능을 한다.'},
+{cat:'rep',q:'텔로머레이스가 고활성을 유지하는 세포 유형이 아닌 것은?',opts:['줄기세포','암세포','림프구','일반 성인 체세포'],ans:3,exp:'일반 성인 체세포는 텔로머레이스 활성이 낮아 분열 시마다 텔로미어가 단축된다. 줄기세포, 암세포, 림프구, 분열 상피세포는 높은 텔로머레이스 활성 유지.'},
+{cat:'rep',q:'복제 중 교정 후 실제 염기 착오율은?',opts:['1/10³','1/10⁵','1/10⁷','1/10⁹'],ans:2,exp:'복제 중: 1/10⁵ → 교정(proofreading) 후: 1/10⁷ → DNA 수선 후: 1/10⁹'},
+{cat:'rep',q:'풀린 단일 가닥 DNA를 안정화하는 단백질은?',opts:['헬리케이스','SSBP','토포아이소머레이스','프라이메이스'],ans:1,exp:'SSBP(단일 가닥 결합 단백질): 분리된 단일 가닥 DNA에 결합하여 재결합을 방지하고 안정화.'},
+
+// DNA 수선 (rep2)
+{cat:'rep2',q:'DNA 수선 과정까지 거치면 최종 염기 착오율은?',opts:['1/10⁵','1/10⁷','1/10⁹','1/10¹¹'],ans:2,exp:'복제 오류 1/10⁵ → 교정 후 1/10⁷ → 수선 후 1/10⁹'},
+{cat:'rep2',q:'UV 조사에 의해 발생하는 DNA 손상은?',opts:['퓨린 탈락','C→U 변형','티민 이중체(thymine dimer)','이중 가닥 절단'],ans:2,exp:'자외선(UV)은 인접한 티민 사이에 공유결합을 유도하여 티민 이중체(thymine dimer)를 형성한다.'},
+{cat:'rep2',q:'C(사이토신)가 자연적으로 탈아미노화될 때 변환되는 염기는?',opts:['A','G','T','U(우라실)'],ans:3,exp:'C의 자연 탈아미노화: C → U(우라실). 수선 안 되면 복제 시 G 자리에 A가 삽입되어 돌연변이 발생.'},
+{cat:'rep2',q:'Exonuclease와 Endonuclease의 차이는?',opts:['Exonuclease는 RNA만, Endonuclease는 DNA만','Exonuclease는 말단부터, Endonuclease는 중간 절단','Exonuclease는 수선, Endonuclease는 교정','차이 없음'],ans:1,exp:'Exonuclease: 말단부터 순차 제거(교정 주로 담당) / Endonuclease: 중간 부위 절단(수선 주로 담당)'},
+{cat:'rep2',q:'DNA 교정(proofreading)은 언제 일어나는가?',opts:['DNA 복제 전','DNA 복제 도중 실시간','DNA 복제 완료 후','세포 분열 시'],ans:1,exp:'교정은 복제 도중 실시간으로 일어난다. 잘못 삽입된 염기를 즉시 3\'→5\' exonuclease로 제거하고 재합성.'},
+{cat:'rep2',q:'절제 수선(excision repair)에서 역할을 하는 효소의 순서는?',opts:['리가제→중합효소→핵산분해효소','핵산분해효소→중합효소→리가제','중합효소→핵산분해효소→리가제','핵산분해효소→리가제→중합효소'],ans:1,exp:'수선 순서: ① Nuclease(손상 부위 인식·제거) → ② DNA Pol(주형으로 새 뉴클레오타이드 삽입) → ③ Ligase(틈 봉합)'},
+{cat:'rep2',q:'퓨린 염기(A, G)만 탈락하는 이유는?',opts:['피리미딘이 더 강한 결합','퓨린-당 결합이 더 불안정','UV 손상 대상이 퓨린만','효소 특이성'],ans:1,exp:'퓨린(A, G)-당 사이의 N-글리코시드 결합이 산성 조건이나 자연적으로 가수분해되어 탈락(apurinic site 형성).'},
+{cat:'rep2',q:'DNA 수선 시 어느 가닥을 주형으로 사용하는가?',opts:['손상된 가닥','손상되지 않은 정상 가닥','새로 합성된 가닥','무작위 선택'],ans:1,exp:'수선 시 손상되지 않은 반대 가닥을 주형으로 사용하여 올바른 뉴클레오타이드를 5\'→3\' 방향으로 삽입.'},
+
+// RNA 합성/전사 (rna)
+{cat:'rna',q:'생명 중심 원리(Central Dogma)에서 역전사는 어느 방향인가?',opts:['DNA → RNA','RNA → DNA','RNA → 단백질','DNA → 단백질'],ans:1,exp:'역전사(reverse transcription): RNA → DNA. 레트로바이러스(예: HIV)에서 역전사효소가 이를 수행.'},
+{cat:'rna',q:'mRNA를 합성하는 RNA 중합효소는?',opts:['RNA Pol I','RNA Pol II','RNA Pol III','RNA Pol IV'],ans:1,exp:'RNA Pol II: mRNA 합성, miRNA 합성. RNA Pol I: rRNA 3종. RNA Pol III: tRNA, 5S rRNA, snRNA.'},
+{cat:'rna',q:'진핵세포 전사의 핵심 프로모터 서열은?',opts:['AAUAAA','GC 상자','TATA box (5\'-TATAAAA-3\')','CRP 결합 부위'],ans:2,exp:'TATA box(5\'-TATAAA-3\'): 일반 전사 인자가 먼저 인식하여 결합한 뒤 RNA Pol II가 프로모터에 결합 가능.'},
+{cat:'rna',q:'진핵세포 전사 종결 신호(아데닐산 중합 신호 서열)는?',opts:['AATAAA(DNA) / AAUAAA(RNA)','TTATTT','GCGCGC','TTTTTT'],ans:0,exp:'AAUAAA(RNA 서열, DNA로는 AATAAA): 이 서열 전사 후 mRNA가 절단되고, Poly-A tail이 첨가된다.'},
+{cat:'rna',q:'5\'-Cap의 구성은?',opts:['아데닌 뉴클레오타이드','변형된 구아닌(G) 뉴클레오타이드','우라실 반복서열','메틸화된 사이토신'],ans:1,exp:'5\'-Cap: 전사 초기에 변형된 구아닌(7-methylguanosine) 뉴클레오타이드가 특이적 결합으로 추가됨.'},
+{cat:'rna',q:'3\'-Poly-A tail에 추가되는 뉴클레오타이드 개수는?',opts:['10~20개','50~250개','500~1000개','항상 정확히 100개'],ans:1,exp:'Poly-A tail: 아데닐산 중합 신호(AAUAAA) 이후 절단 지점에 약 50~250개의 아데닌(A) 뉴클레오타이드가 중합됨.'},
+{cat:'rna',q:'인트론(intron)이란?',opts:['단백질 암호화 서열','단백질 비암호화 서열 - 제거됨','tRNA를 암호화하는 서열','프로모터 서열'],ans:1,exp:'인트론: 단백질을 암호화하지 않는 서열 → splicing으로 제거. 엑손(exon): 단백질 암호화 → 연결됨.'},
+{cat:'rna',q:'스플라이소좀(spliceosome)이 인트론을 제거할 때 형성하는 구조는?',opts:['십자 구조','올가미(lariat) 구조','헤어핀 구조','이중 나선'],ans:1,exp:'스플라이소좀은 인트론 내부의 분지점(branch point)과 말단 서열을 인식하고, 인트론을 올가미(lariat) 구조로 만들어 제거한다.'},
+{cat:'rna',q:'원핵세포에 존재하는 RNA 중합효소의 종류는?',opts:['1종류','3종류','4종류','생물마다 다름'],ans:0,exp:'원핵세포는 RNA 중합효소 1종류만 존재. mRNA, rRNA, tRNA 등 모든 RNA 합성.'},
+{cat:'rna',q:'원핵세포 전사에서 프로모터를 인식하는 보조 인자는?',opts:['인핸서','시그마(σ) 인자','CRP','억제자'],ans:1,exp:'시그마(σ) 인자: RNA 중합효소가 프로모터를 인식하는 것을 돕는 보조 인자. 원핵세포에서 중요.'},
+{cat:'rna',q:'원핵세포의 Rho-독립적 전사 종결에 관여하는 구조는?',opts:['Poly-A tail','Hairpin + poly-U','TATA box','CRP 결합'],ans:1,exp:'Rho-독립적 종결: GC-풍부 역방향 반복 서열이 hairpin 구조 형성 + 8개 poly-U의 약한 A-U 결합 → RNA Pol 분리.'},
+{cat:'rna',q:'miRNA가 세포질로 이출될 때 관여하는 단백질은?',opts:['Drosha','Exportin5','Dicer','Argonaute'],ans:1,exp:'미성숙 miRNA(pre-miRNA)는 핵에서 Drosha로 가공된 후 Exportin5 단백질에 의해 세포질로 이출된다.'},
+{cat:'rna',q:'siRNA와 miRNA의 가장 큰 차이점은?',opts:['크기가 다름','siRNA는 핵 내 가공(Drosha) 단계 없이 세포질에서 Dicer를 바로 만남','miRNA는 RISC 형성 안 함','siRNA는 단일 가닥 상태로 존재'],ans:1,exp:'miRNA: 핵에서 Drosha → Exportin5 → 세포질 Dicer. siRNA: 핵 내 가공 없이 바로 세포질에서 Dicer 만남.'},
+{cat:'rna',q:'RISC(RNA-induced silencing complex)의 핵심 단백질은?',opts:['Dicer','Drosha','Argonaute','Exportin5'],ans:2,exp:'Argonaute(아르고노트): RISC의 핵심 단백질. 단일 가닥 siRNA/miRNA와 결합하여 상보적 mRNA를 표적.'},
+{cat:'rna',q:'tRNA, 5S rRNA, snRNA를 합성하는 효소는?',opts:['RNA Pol I','RNA Pol II','RNA Pol III','RNA Pol IV'],ans:2,exp:'RNA Pol III: tRNA, 5S rRNA, 스플라이싱에 사용되는 snRNA 합성.'},
+
+// 단백질 합성 (prot)
+{cat:'prot',q:'삼중항 암호(triplet code)를 실험으로 증명한 사람은?',opts:['왓슨과 크릭','니런버그와 마테이','크릭, 바넷, 브레너','멘델'],ans:2,exp:'크릭, 바넷, 브레너: T4 박테리오파지에서 염기 삽입/결실 실험. 3의 배수 삽입/결실 시 야생형 유사 표현형 → 3개 염기 = 1 코돈 증명.'},
+{cat:'prot',q:'최초로 해독된 코돈(UUU)이 암호화하는 아미노산은?',opts:['라이신','프롤린','페닐알라닌','메싸이오닌'],ans:2,exp:'니런버그와 마테이: poly-U 인공 mRNA → 페닐알라닌(Phe)으로만 구성된 폴리펩타이드. UUU = Phe.'},
+{cat:'prot',q:'단백질 합성 개시 코돈은?',opts:['UAA','UAG','UGA','AUG'],ans:3,exp:'AUG: 개시 코돈. 메싸이오닌(Met)을 지정하며 단백질 합성 시작 신호.'},
+{cat:'prot',q:'종결 코돈이 아닌 것은?',opts:['UAA','UAG','UGA','UAC'],ans:3,exp:'종결 코돈: UAA, UAG, UGA (아미노산 미지정). UAC는 티로신(Tyr)을 암호화하는 코돈.'},
+{cat:'prot',q:'유전부호의 "중복성(degeneracy)"이란?',opts:['하나의 코돈이 여러 아미노산 지정','여러 코돈이 동일 아미노산 지정','코돈이 겹쳐서 읽힘','모든 생물에 공통'],ans:1,exp:'중복성: 여러 코돈이 동일 아미노산을 지정. 보통 세 번째 염기만 다름(wobble). 돌연변이 발생 시 아미노산 변화 없는 경우가 많아 안전장치 역할.'},
+{cat:'prot',q:'유전부호의 "보편성(universality)"이 의미하는 바는?',opts:['모든 생물이 동일 유전부호 사용(거의)','코돈이 겹치지 않음','하나의 코돈은 하나의 아미노산','3개 염기가 1코돈'],ans:0,exp:'보편성: 지구상 거의 모든 생물이 동일한 유전부호 사용 → 공통 조상 진화의 증거이자 유전공학의 기반.'},
+{cat:'prot',q:'동요(wobble) 현상이 일어나는 코돈의 위치는?',opts:['1번째 염기','2번째 염기','3번째 염기','안티코돈의 1번째 위치'],ans:2,exp:'동요(wobble): 코돈의 세 번째 염기(3\' 위치)에서 비표준 염기쌍이 허용됨. 이것이 중복성의 분자적 원인.'},
+{cat:'prot',q:'tRNA의 3\' 말단에 결합하는 것은?',opts:['안티코돈','코돈','아미노산','리보솜'],ans:2,exp:'tRNA 3\' 말단(-CCA-OH): 아미노아실-tRNA 합성효소(aminoacyl-tRNA synthetase)가 해당 아미노산을 결합시킴.'},
+{cat:'prot',q:'리보솜의 A 자리(aminoacyl site)의 기능은?',opts:['완성된 폴리펩타이드 방출','tRNA 배출','새로운 아미노아실-tRNA 결합','펩타이드 결합 형성'],ans:2,exp:'A 자리: 새로운 아미노아실-tRNA가 결합하는 곳. P 자리: 펩티딜-tRNA. E 자리: 방출 tRNA.'},
+{cat:'prot',q:'번역 신장 단계에서 리보솜이 이동하는 방향은?',opts:['3\'→5\'(mRNA 기준)','5\'→3\'(mRNA 기준)','위아래로 이동','이동 없음'],ans:1,exp:'리보솜은 mRNA를 따라 5\'→3\' 방향으로 이동(전위, translocation)하며 폴리펩타이드를 신장한다.'},
+{cat:'prot',q:'원핵세포의 리보솜 크기(S 값)는?',opts:['70S (30S + 50S)','80S (40S + 60S)','60S (20S + 40S)','100S'],ans:0,exp:'원핵세포: 70S 리보솜 (소단위체 30S + 대단위체 50S). 진핵세포: 80S (40S + 60S).'},
+{cat:'prot',q:'폴리솜(polysome)이란?',opts:['여러 rRNA가 모인 구조','하나의 mRNA에 여러 리보솜이 결합한 구조','리보솜과 핵 사이의 복합체','mRNA와 tRNA의 결합체'],ans:1,exp:'폴리솜(polysome): 하나의 mRNA에 여러 리보솜이 동시에 결합하여 다수의 동일 단백질을 동시에 합성하는 구조.'},
+{cat:'prot',q:'아미노아실-tRNA 합성효소(aminoacyl-tRNA synthetase)의 역할은?',opts:['안티코돈-코돈 결합','tRNA에 정확한 아미노산 결합','mRNA 코돈 인식','펩타이드 결합 형성'],ans:1,exp:'아미노아실-tRNA 합성효소: tRNA의 3\' 말단에 해당 아미노산을 결합시킴. 실질적으로 코돈-아미노산 대응을 실행하는 효소.'},
+
+// 오페론 (operon)
+{cat:'operon',q:'오페론(operon)의 구성 요소가 아닌 것은?',opts:['프로모터','작동부위(operator)','구조유전자','인핸서'],ans:3,exp:'오페론 = 프로모터 + 작동부위(operator) + 구조유전자. 인핸서는 진핵세포 유전자 발현 조절 요소.'},
+{cat:'operon',q:'젖당 오페론에서 젖당이 없을 때의 상태는?',opts:['억제자 불활성 → 전사 억제','억제자 활성 → 전사 억제','억제자 활성 → 전사 촉진','억제자 없음 → 전사 진행'],ans:1,exp:'젖당 없을 때: lac I에서 만들어진 억제자(repressor)가 활성 상태로 작동부위에 결합 → RNA Pol 차단 → 전사 억제.'},
+{cat:'operon',q:'allolactose의 역할은?',opts:['억제자를 활성화','억제자를 불활성화','RNA 중합효소 직접 활성화','CRP와 결합'],ans:1,exp:'allolactose(알로락토오스): 젖당의 이성질체. 억제자에 결합하여 불활성화시킴 → 작동부위 비결합 → 전사 유도.'},
+{cat:'operon',q:'트립토판 오페론에서 트립토판(Trp)의 역할은?',opts:['inducer(유도제)','corepressor(보조억제자)','RNA Pol 활성화','억제자 불활성화'],ans:1,exp:'Trp은 보조억제자(corepressor): 불활성 억제자에 결합하여 활성화 → 작동부위 결합 → 전사 억제 → 음성 피드백.'},
+{cat:'operon',q:'젖당 오페론과 트립토판 오페론의 공통점은?',opts:['둘 다 유도성 오페론','둘 다 억제자에 의해 조절','둘 다 포도당 효과에 민감','억제자 초기 상태가 동일'],ans:1,exp:'두 오페론 모두 억제자(repressor) 단백질에 의해 음성 조절. 차이: 젖당=유도성(억제자 기본 활성), 트립토판=억제성(억제자 기본 불활성).'},
+{cat:'operon',q:'젖당 오페론의 lacZ 유전자가 암호화하는 단백질은?',opts:['젖당 투과효소','아세틸전이효소','β-갈락토시다제','RNA 중합효소'],ans:2,exp:'lacZ → β-갈락토시다제: 젖당을 포도당과 갈락토오스로 가수분해. lacY → 투과효소: 젖당 세포 내 유입. lacA → 아세틸전이효소.'},
+{cat:'operon',q:'CRP-cAMP 복합체가 lac 오페론에 미치는 영향은?',opts:['전사 억제','전사 촉진(양성 조절)','억제자 활성화','종결 신호 제공'],ans:1,exp:'CRP-cAMP 복합체: lac 프로모터 상류 CRP 결합 부위에 결합 → RNA Pol의 프로모터 결합 촉진 → 전사 크게 증가(양성 조절).'},
+{cat:'operon',q:'포도당 농도가 높을 때 lac 오페론 발현이 낮은 이유는?',opts:['억제자 활성화','cAMP 농도 감소 → CRP-cAMP 복합체 미형성','allolactose 분해','젖당 투과효소 억제'],ans:1,exp:'포도당 높음 → cAMP 농도 낮음 → CRP-cAMP 복합체 형성 안 됨 → RNA Pol이 프로모터에 잘 결합 못함 → 낮은 전사(포도당 효과).'},
+{cat:'operon',q:'lac 오페론에서 프로모터 결실 돌연변이의 결과는?',opts:['항상 전사 O','항상 전사 X','젖당 있을 때만 전사 O','젖당 없을 때만 전사 O'],ans:1,exp:'프로모터 결실: RNA Pol이 결합할 수 없음 → 젖당 유무에 관계없이 항상 전사 불가.'},
+{cat:'operon',q:'lac 오페론에서 작동부위(operator) 결실 돌연변이의 결과는?',opts:['항상 전사 O(구성적 발현)','항상 전사 X','젖당 있을 때만 전사 O','변화 없음'],ans:0,exp:'작동부위 결실: 억제자가 결합할 곳이 없음 → 항상 RNA Pol 접근 가능 → 젖당 유무에 관계없이 항상 전사(구성적 발현).'},
+{cat:'operon',q:'오페론의 장점으로 가장 적절한 것은?',opts:['다양한 단백질 동시 생산','기능적으로 연관된 유전자들을 동시에 조절 가능','전사와 번역 분리 가능','인트론 제거로 mRNA 안정성 증가'],ans:1,exp:'오페론: 기능적으로 연관된 유전자들을 하나의 전사 단위로 묶어 하나의 프로모터 조절로 동시 발현/억제 가능.'},
+
+// 진핵세포 유전자 발현 조절 (euk)
+{cat:'euk',q:'히스톤 아세틸화가 전사에 미치는 영향은?',opts:['전사 억제','전사 촉진','영향 없음','mRNA 분해 촉진'],ans:1,exp:'히스톤 아세틸화: 라이신의 (+)전하 감소 → DNA-히스톤 결합 느슨해짐 → RNA Pol 접근 용이 → 전사 촉진.'},
+{cat:'euk',q:'히스톤 메틸화가 전사에 미치는 주된 영향은?',opts:['전사 촉진','전사 억제','번역 억제','RNA 스플라이싱 변화'],ans:1,exp:'히스톤 메틸화: 일반적으로 염색질 응축 유도 → 전사 억제(단, 메틸화 위치에 따라 촉진도 가능하나 주로 억제).'},
+{cat:'euk',q:'DNA 메틸화에서 메틸기가 붙는 염기는?',opts:['아데닌(A)','사이토신(C)','구아닌(G)','티민(T)'],ans:1,exp:'DNA 메틸화: 사이토신(C)의 5번 탄소에 메틸기(-CH₃) 부착 → 염색질 압축 → 전사 억제.'},
+{cat:'euk',q:'바소체(Barr body)란?',opts:['불활성화된 X 염색체','과활성화된 Y 염색체','응축된 상염색체','리보솜 복합체'],ans:0,exp:'바소체: XX 개체에서 무작위로 불활성화된 X 염색체가 간기에 응축된 상태로 관찰되는 구조물.'},
+{cat:'euk',q:'유전자량 보정(dosage compensation)이 일어나는 시기(인간)는?',opts:['수정 직후','배발생 6~8주','출생 직후','사춘기'],ans:1,exp:'인간에서 유전자량 보정(X 불활성화)은 배발생 6~8주 후에 무작위로 일어난다.'},
+{cat:'euk',q:'삼색고양이(calico cat)가 거의 암컷인 이유는?',opts:['털색 유전자가 Y 염색체에 있음','털색 유전자가 X 염색체에 있어 이형접합 암컷에서 X 무작위 불활성화로 얼룩무늬','수컷은 털색 유전자 없음','암수 호르몬 차이'],ans:1,exp:'털색 유전자 → X 염색체. 이형접합 암컷(XX): X 무작위 불활성화 → 세포마다 다른 털색 발현 → 얼룩무늬. 수컷(XY): 하나의 X만 → 단색.'},
+{cat:'euk',q:'유전체 각인(Genomic imprinting)이란?',opts:['부계와 모계 유전자 모두 동시 발현','부계나 모계 중 한쪽 유전자만 발현','DNA 서열 변화에 의한 유전','감수분열마다 리셋됨'],ans:1,exp:'유전체 각인: 부계/모계 중 한쪽만 발현, 나머지 침묵. 체세포 분열 시 계속 유지되는 후성 유전 형질.'},
+{cat:'euk',q:'인핸서(enhancer)의 특징으로 옳은 것은?',opts:['반드시 프로모터 바로 옆에 위치','특수 전사 인자(활성자)가 결합, 프로모터에서 수천 bp 떨어져 위치 가능','RNA Pol이 직접 결합','모든 유전자에 동일한 인핸서'],ans:1,exp:'인핸서: 원거리 조절 부위. 프로모터에서 수천 뉴클레오타이드 거리도 가능. 특수 전사 인자(활성자) 결합 → DNA 루핑으로 프로모터와 접촉 → 전사 촉진.'},
+{cat:'euk',q:'선택적 스플라이싱(alternative splicing)의 결과는?',opts:['같은 유전자에서 동일한 단백질만 생성','같은 pre-mRNA에서 다양한 단백질 생성 가능','인트론만 선택적으로 보존','엑손 순서 변경'],ans:1,exp:'선택적 스플라이싱: 같은 pre-mRNA에서 어느 엑손을 포함하느냐에 따라 다양한 mRNA → 다양한 단백질 생성 가능.'},
+{cat:'euk',q:'초파리 수컷(XY)에서 Sxl 유전자 선택적 스플라이싱의 결과는?',opts:['기능성 Sxl 단백질 생성','중간에 종결 코돈 포함 → 비기능성 단백질','Tra 단백질 활성화','암컷 특이적 형질'],ans:1,exp:'수컷(XY): Sxl pre-mRNA가 다른 방식으로 스플라이싱 → 중간에 stop codon 포함 → 비기능성 단백질 → 수컷 특이적 형질 발달.'},
+{cat:'euk',q:'손상 단백질을 분해하는 세포 내 경로는?',opts:['리소좀-프로테아제','유비퀴틴-프로테아좀 경로','핵 내 분해','mRNA 간섭'],ans:1,exp:'유비퀴틴-프로테아좀: 유비퀴틴이 분해 대상 단백질에 표지 → 프로테아좀이 인식하여 분해. 세포 주기, 면역, 전사 조절에 중요.'},
+{cat:'euk',q:'진핵세포와 원핵세포의 가장 큰 유전자 발현 차이점은?',opts:['진핵세포에 오페론 없음','진핵세포는 전사와 번역이 시공간 분리','원핵세포에 전사인자 없음','진핵세포는 RNA 수선 없음'],ans:1,exp:'진핵세포: 핵막 존재 → 전사(핵)와 번역(세포질)이 시공간적으로 분리 → 더 다양한 단계의 조절 가능.'},
+{cat:'euk',q:'일반 전사 인자(general transcription factor)의 특징은?',opts:['특정 유전자만 조절','거의 모든 유전자의 전사 개시에 필요','인핸서에만 결합','세포 유형마다 다름'],ans:1,exp:'일반 전사 인자(TFIIA, TFIIB, TFIID 등): 거의 모든 유전자의 전사 개시에 필요. TATA box에 결합하여 RNA Pol II 결합 도움.'},
+{cat:'euk',q:'간세포에서 알부민 유전자, 수정체 세포에서 크리스탈린 유전자가 발현되는 이유는?',opts:['두 세포의 유전자 서열이 다름','두 세포의 특수 전사 인자 조합이 달라 다른 인핸서에 결합','두 세포의 리보솜이 다름','RNA 중합효소 종류 차이'],ans:1,exp:'두 세포는 동일 유전자 보유. 그러나 특수 전사 인자의 조합이 달라 서로 다른 인핸서에 결합 → 서로 다른 유전자 발현.'},
+{cat:'euk',q:'후성 유전(epigenetic inheritance)의 특징은?',opts:['DNA 염기서열 변화를 동반','DNA 서열 변화 없이 염색질 변형으로 형질 전달','감수분열 시 항상 소실','체세포에서만 유지'],ans:1,exp:'후성 유전: DNA 염기서열 변화 없이 염색질 변형(메틸화, 아세틸화 등)으로 형질이 전달되는 현상. 체세포 분열뿐 아니라 일부 감수분열로도 전달 가능.'},
+];
+
+const TAGS = {dna:'DNA 이중나선',rep:'DNA 복제',rep2:'DNA 수선',rna:'RNA 합성/전사',prot:'단백질 합성',operon:'오페론',euk:'진핵세포 조절'};
+const TAG_CLS = {dna:'tag-dna',rep:'tag-rep',rep2:'tag-rep2',rna:'tag-rna',prot:'tag-prot',operon:'tag-operon',euk:'tag-euk'};
+
+let questions = [];
+let currentFilter = 'all';
+let idx = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+
+function shuffle(arr){return arr.slice().sort(()=>Math.random()-0.5);}
+
+function setFilter(cat){
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  questions = shuffle(cat==='all'? ALL_QUESTIONS : ALL_QUESTIONS.filter(q=>q.cat===cat));
+  idx=0; correctCount=0; wrongCount=0; answered=false;
+  updateStats();
+  render();
+}
+
+function updateStats(){
+  document.getElementById('correct-count').textContent=correctCount;
+  document.getElementById('wrong-count').textContent=wrongCount;
+  const rem = questions.length-idx;
+  document.getElementById('remain-count').textContent=rem<0?0:rem;
+  const done = idx>questions.length?questions.length:idx;
+  document.getElementById('prog').style.width=(questions.length?Math.round(done/questions.length*100):0)+'%';
+}
+
+function render(){
+  const area = document.getElementById('quiz-area');
+  if(!questions.length){area.innerHTML='<div class="card" style="text-align:center;padding:2rem;color:var(--color-text-secondary)">선택한 카테고리에 문제가 없습니다.</div>';return;}
+  if(idx>=questions.length){showResult();return;}
+  const q = questions[idx];
+  const labels=['A','B','C','D'];
+  area.innerHTML=`
+  <div class="card">
+    <div class="q-meta">
+      <span class="q-num">${idx+1} / ${questions.length}</span>
+      <span class="q-tag ${TAG_CLS[q.cat]}">${TAGS[q.cat]}</span>
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div class="options">
+      ${q.opts.map((o,i)=>`<button class="opt" id="opt${i}" onclick="choose(${i})"><span class="opt-label">${labels[i]}</span><span>${o}</span></button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="btn" id="next-btn" onclick="next()" style="display:none"><i class="ti ti-arrow-right" aria-hidden="true"></i> 다음 문제</button>
+      <button class="btn" onclick="skipQ()"><i class="ti ti-refresh" aria-hidden="true"></i> 건너뛰기</button>
+    </div>
+  </div>`;
+}
+
+function choose(i){
+  if(answered) return;
+  answered=true;
+  const q=questions[idx];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  if(i===q.ans){
+    opts[i].classList.add('correct');
+    correctCount++;
+    showFeedback(true, q.exp);
+  } else {
+    opts[i].classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    wrongCount++;
+    showFeedback(false, q.exp);
+  }
+  idx++;
+  updateStats();
+  document.getElementById('next-btn').style.display='flex';
+}
+
+function showFeedback(ok,exp){
+  const el=document.getElementById('feedback');
+  el.className='feedback show '+(ok?'correct':'wrong');
+  el.innerHTML=(ok?'<strong>정답!</strong> ':'<strong>오답.</strong> ')+exp;
+}
+
+function next(){answered=false;render();}
+
+function skipQ(){
+  const q=questions.splice(idx,1)[0];
+  questions.push(q);
+  answered=false;
+  updateStats();
+  render();
+}
+
+function showResult(){
+  const total=correctCount+wrongCount;
+  const pct=total?Math.round(correctCount/total*100):0;
+  const msg=pct>=90?'완벽합니다! 🎉':pct>=70?'잘 하고 있어요!':pct>=50?'조금 더 연습해 봐요.':'처음부터 다시 복습해 봐요.';
+  document.getElementById('quiz-area').innerHTML=`
+  <div class="card result-card">
+    <div class="result-score">${pct}%</div>
+    <div class="result-sub">${msg}</div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-val blue">${questions.length}</div>총 문제</div>
+      <div class="rb-item"><div class="rb-val green">${correctCount}</div>맞은 개수</div>
+      <div class="rb-item"><div class="rb-val red">${wrongCount}</div>틀린 개수</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn primary" onclick="setFilter('${currentFilter}')"><i class="ti ti-refresh" aria-hidden="true"></i> 다시 풀기</button>
+      <button class="btn" onclick="setFilter('all')"><i class="ti ti-list" aria-hidden="true"></i> 전체 문제로</button>
+    </div>
+  </div>`;
+}
+
+setFilter('all');
+</script>
